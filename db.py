@@ -4,8 +4,9 @@ import os
 import json
 from conf.configuration import conf
 
+# Dictionnaire de configuration de la base de données
 db_config = {
-    'user': conf['database']['username'],
+    'user': conf['database']['user'],
     'password': conf['database']['password'],
     'host': conf['database']['host'],
     'database': conf['database']['name'],
@@ -15,7 +16,8 @@ db_config = {
 # Fonction pour obtenir la connexion à la base de données
 def get_db_connection():
     try:
-        cnx = mysql.connector.connect(**conf)
+        # Utiliser db_config au lieu de conf
+        cnx = mysql.connector.connect(**db_config)
         return cnx
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:

@@ -18,23 +18,25 @@
 
             </ul>
 
-            {% if username %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Dropdown
-                    </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Mon compte</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Déconnexion</a></li>
-                        </ul>
-                </li>
+            <ul class="navbar-nav mb-2 mb-lg-0">
+                {% if username %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ username }}
+                        </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Mon compte</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Déconnexion</a></li>
+                            </ul>
+                    </li>
                 {% else %}
                     <div class="d-flex justify-content-center align-items-center">
                         <a href="{{ url_for('login') }}" class="btn btn-secondary">Connexion</a>
                         <a href="{{ url_for('register') }}" class="btn btn-dark">Inscription</a>
                     </div>
                 {% endif %}
+            </ul>
         </div>
     </div>
 </nav>

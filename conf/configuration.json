@@ -4,13 +4,20 @@
     "secret_key": "epsinformation",
 
     "database": {
-        "username": "epsinformation",
+        "user": "epsinformation",
         "password": "epsinformation",
         "name": "epsinformation",
-        "host": "localhost"
+        "host": "127.0.0.1"
     },
 
     "allowed_domains": [
         "ecoles-epsi.net"
+    ],
+
+    "admins": [
+        "theo.boutroux@ecoles-epsi.net",
+        "sasha.wilk@ecoles-epsi.net",
+        "claire.nguyen@ecoles-epsi.net",
+        "h.prevost@ecoles-epsi.net"
     ]
 }
