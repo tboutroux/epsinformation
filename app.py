@@ -8,7 +8,6 @@ app.secret_key = conf['secret_key']
 
 @app.route("/")
 def index():
-
     # Récupérer le nom d'utilisateur à partir de la session
     username = session.get('username')
 
