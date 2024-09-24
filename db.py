@@ -2,23 +2,20 @@ import mysql.connector
 from mysql.connector import errorcode
 import os
 import json
-
-# Charger la configuration de la base de données
-with open(os.path.join('conf', 'config.json')) as config_file:
-    config = json.load(config_file)
+from conf.configuration import conf
 
 db_config = {
-    'user': config['database']['username'],
-    'password': config['database']['password'],
-    'host': config['database']['host'],
-    'database': config['database']['name'],
+    'user': conf['database']['username'],
+    'password': conf['database']['password'],
+    'host': conf['database']['host'],
+    'database': conf['database']['name'],
     'raise_on_warnings': True
 }
 
 # Fonction pour obtenir la connexion à la base de données
 def get_db_connection():
     try:
-        cnx = mysql.connector.connect(**db_config)
+        cnx = mysql.connector.connect(**conf)
         return cnx
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
