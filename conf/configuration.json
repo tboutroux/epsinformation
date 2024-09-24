@@ -2,10 +2,10 @@
     "environnement": "recette",
 
     "database": {
-        "username": "",
-        "password": "",
-        "name": "",
-        "host": ""
+        "username": "epsinformation",
+        "password": "epsinformation",
+        "name": "epsinformation",
+        "host": "localhost"
     },
 
     "allowed_domains": [
