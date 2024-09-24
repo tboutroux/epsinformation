@@ -1,12 +1,22 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import hashlib
 from db import *
+from conf.configuration import conf
 
 app = Flask(__name__)
+app.secret_key = conf['secret_key']
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+
+    # Récupérer le nom d'utilisateur à partir de la session
+    username = session.get('username')
+
+    if username:
+        return render_template('index.html', username=username)
+    
+    else:
+        return render_template('index.html')
 
 def hash_password(password):
     sha512 = hashlib.sha512()
@@ -17,13 +27,15 @@ def hash_password(password):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        lastname = request.form['lastName']
+        firstname = request.form['firstName']
         password = request.form['password']
+        mail = request.form['mail']
+        username = f"{firstname}.{lastname}"
 
-        users = read_lines("compte")
+        users = read_lines("compte", conditions={"nom": lastname, "prenom": firstname, "mail": mail})
 
-        if username in users and hash_password(password) == users[username]['password']:
-            flash('Connexion réussie!', 'success')
+        if lastname in users and hash_password(password) == users[username]['password']:
             session['username'] = username
             return redirect(url_for('index'))
         else:
@@ -47,22 +59,32 @@ def logout():
     # Supprimer le nom d'utilisateur de la session (déconnexion)
     session.pop('username', None)
     flash('Vous avez été déconnecté avec succès.', 'info')
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
+        lastname = request.form['lastName']
+        firstname = request.form['firstName']
         password = request.form['password']
+        mail = request.form['mail']
+        username = f"{firstname}.{lastname}"
 
-        users = read_lines("compte")
+        new_user = {
+            'nom': lastname,
+            'prenom': firstname,
+            'mail': mail,
+            'username': username,
+            'password': hash_password(password)
+        }
 
-        # Vérifier si le nom d'utilisateur est déjà utilisé
+        users = read_lines("compte", conditions={"nom": lastname, "prenom": firstname, "mail": mail})
+
         if username in users:
             flash('Le nom d\'utilisateur est déjà pris. Veuillez choisir un autre.', 'danger')
         else:
-            # Ajouter l'utilisateur à la base de données (ici, stockage en mémoire pour la démonstration)
-            users[username] = {'username': username, 'password': hash_password(password)}
+
+            create_line("compte", new_user)
             flash('Inscription réussie! Vous pouvez maintenant vous connecter.', 'success')
             return redirect(url_for('login'))
 

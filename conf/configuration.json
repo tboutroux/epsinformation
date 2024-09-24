@@ -1,6 +1,8 @@
 {
     "environnement": "recette",
 
+    "secret_key": "epsinformation",
+
     "database": {
         "username": "epsinformation",
         "password": "epsinformation",
