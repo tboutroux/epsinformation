@@ -1,6 +1,7 @@
 -- Création de l'utilisateur
 CREATE USER 'epsinformation'@'localhost';
 GRANT ALL ON epsinformation TO 'epsinformation'@'localhost' IDENTIFIED BY 'epsinformation'; 
+FLUSH PRIVILEGES;
 
 -- Création de la base de données
 CREATE DATABASE IF NOT EXISTS `epsinformation`;
