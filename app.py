@@ -2,9 +2,46 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import hashlib
 from db import *
 from conf.configuration import conf
+import unidecode
 
 app = Flask(__name__)
 app.secret_key = conf['secret_key']
+
+def hash_password(password):
+    sha512 = hashlib.sha512()
+    sha512.update(password.encode('utf-8'))
+    hashed_password = sha512.hexdigest()
+    return hashed_password
+
+def format_username(column_name: str) -> str:
+    """
+    Formate le nom de la colonne en remplaçant les espaces par des underscores, 
+    en mettant tout en minuscules,
+    en supprimant les caractères spéciaux,
+    et en remplaçant les caractères accentués par leur équivalent non accentué.
+
+    Args:
+        column_name (str): Nom de la colonne à formater
+
+    Returns:
+        str: Nom de la colonne formaté
+    """
+    # Convertir en minuscules
+    column_name = column_name.lower()
+    
+    # Remplacer les espaces par des underscores
+    column_name = column_name.replace(" ", "_")
+
+    # Remplacer les apostrophes par des underscores
+    column_name = column_name.replace("'", "_")
+
+    # Remplacer les - par des underscores
+    column_name = column_name.replace("-", "_")
+    
+    # Remplacer les caractères accentués par leur équivalent non accentué
+    column_name = unidecode.unidecode(column_name)
+
+    return column_name
 
 @app.route("/")
 def index():
@@ -17,28 +54,26 @@ def index():
     else:
         return render_template('index.html')
 
-def hash_password(password):
-    sha512 = hashlib.sha512()
-    sha512.update(password.encode('utf-8'))
-    hashed_password = sha512.hexdigest()
-    return hashed_password
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        lastname = request.form['lastName']
-        firstname = request.form['firstName']
-        password = request.form['password']
-        mail = request.form['mail']
-        username = f"{firstname}.{lastname}"
+        try:
 
-        users = read_lines("compte", conditions={"nom": lastname, "prenom": firstname, "mail": mail})
+            password = request.form['password']
+            mail = request.form['email']
 
-        if lastname in users and hash_password(password) == users[username]['password']:
-            session['username'] = username
-            return redirect(url_for('index'))
-        else:
-            flash('Échec de la connexion. Vérifiez votre nom d\'utilisateur et votre mot de passe.', 'danger')
+            users = read_lines("compte", conditions={"email": mail})
+
+            if mail == users[0]['email'] and hash_password(password) == users[0]['password']:
+                session['username'] = users[0]['username']
+                return redirect(url_for('index'))
+            else:
+                print('Échec de la connexion. Vérifiez votre nom d\'utilisateur et votre mot de passe.', 'danger')
+
+        except Exception as e:
+            print(f"Error: {e}")
+            flash('Une erreur s\'est produite lors de la connexion. Veuillez réessayer.', 'danger')
 
     return render_template('login.html')
 
@@ -62,32 +97,50 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    message = ''
     if request.method == 'POST':
-        lastname = request.form['lastName']
-        firstname = request.form['firstName']
-        password = request.form['password']
-        mail = request.form['mail']
-        username = f"{firstname}.{lastname}"
 
-        new_user = {
-            'nom': lastname,
-            'prenom': firstname,
-            'mail': mail,
-            'username': username,
-            'password': hash_password(password)
-        }
+        try:
+            lastname = request.form['lastName']
+            firstname = request.form['firstName']
+            password = request.form['password']
+            mail = request.form['email']
+            username = format_username(firstname) + "." + format_username(lastname)
+            role = "1" if mail in conf['admins'] else "0"
 
-        users = read_lines("compte", conditions={"nom": lastname, "prenom": firstname, "mail": mail})
+            print(username)
 
-        if username in users:
-            flash('Le nom d\'utilisateur est déjà pris. Veuillez choisir un autre.', 'danger')
-        else:
+            new_user = {
+                'nom': lastname,
+                'prenom': firstname,
+                'email': mail,
+                'username': username,
+                'password': hash_password(password),
+                'role': role
+            }
 
-            create_line("compte", new_user)
-            flash('Inscription réussie! Vous pouvez maintenant vous connecter.', 'success')
-            return redirect(url_for('login'))
+            users = read_lines("compte", conditions={"nom": lastname, "prenom": firstname, "email": mail})
 
-    return render_template('register.html')
+            if username in users:
+                message = 'Le nom d\'utilisateur est déjà utilisé.'
+
+            elif mail in users :
+                message = 'L\'adresse e-mail est déjà utilisée ou n\'est pas autorisée.'
+            else:
+
+                create_line("compte", new_user)
+                message = 'Inscription réussie! Vous pouvez maintenant vous connecter.'
+                return redirect(url_for('login'))
+            
+        except Exception as e:
+            print(f"Error: {e}")
+            flash('Une erreur s\'est produite lors de l\'inscription. Veuillez réessayer.', 'danger')
+
+    if message:
+        return render_template('register.html', message=message)
+    
+    else:
+        return render_template('register.html')
 
 if __name__ == "__main__":
     app.run(debug=True)
