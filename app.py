@@ -178,5 +178,37 @@ def register():
     else:
         return render_template('register.html')
 
+@app.route('/post', methods=['GET', 'POST'])
+def create_post():
+    if request.method == 'POST':
+        try:
+            title = request.form['title']
+            content = request.form['content']
+            post_type = request.form['type']
+            degree = request.form['degree']
+            username = session.get('username')
+
+            if not username:
+                flash('Vous devez être connecté pour créer un post.', 'warning')
+                return redirect(url_for('login'))
+
+            new_post = {
+                'title': title,
+                'content': content,
+                'type': post_type,
+                'degree': degree,
+                'author': username
+            }
+
+            create_line("posts", new_post)
+            flash('Post créé avec succès!', 'success')
+            return redirect(url_for('index'))
+
+        except Exception as e:
+            print(f"Error: {e}")
+            flash('Une erreur s\'est produite lors de la création du post. Veuillez réessayer.', 'danger')
+
+    return render_template('post.html')
+
 if __name__ == "__main__":
     app.run(debug=True)
