@@ -9,44 +9,51 @@
     <title>Post</title>
 </head>
 
-    <body>
-        
-        {% include 'components/navbar.html' %}
+<body>
+    {% include 'components/navbar.html' %}
 
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card mt-5">
-                        <div class="card-header">
-                            Post Form
-                        </div>
-                        <div class="card-body">
-                            <form  action="{{ url_for('login') }}" method="post">
-                                <div class="mb-3">
-                                    <label for="title" class="form-label">Title</label>
-                                    <input type="text" class="form-control" id="title" name="title" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="content" class="form-label">Content</label>
-                                    <input type="text" class="form-control" id="content" name="content" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="type" class="form-label">Type</label>
-                                    <input type="select" class="form-control" id="type" name="type" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="degree" class="form-label">Degree</label>
-                                    <input type="select" class="form-control" id="degree" name="degree" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Submit</button>
-                            </form>
-                        </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card mt-5">
+                    <div class="card-header">
+                        Post Form
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ url_for('login') }}" method="post">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="content" class="form-label">Content</label>
+                                <input type="text" class="form-control" id="content" name="content" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="type" class="form-label">Type</label>
+                                <select class="form-control" id="type" name="type" required>
+                                    <option value="" disabled selected>Select type</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="degree" class="form-label">Degree</label>
+                                <select class="form-control" id="degree" name="degree" required>
+                                    <option value="" disabled selected>Select degree</option>
+                                    <option value="crucial">Crucial</option>
+                                    <option value="important">Important</option>
+                                    <option value="faible">Faible</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
-    </body>
-    </html>
-    
+    </div>
 </body>
 </html>
