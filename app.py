@@ -3,6 +3,7 @@ import hashlib
 from db import *
 from conf.configuration import conf
 import unidecode
+import requests
 
 app = Flask(__name__)
 app.secret_key = conf['secret_key']
@@ -43,16 +44,51 @@ def format_username(column_name: str) -> str:
 
     return column_name
 
+def get_weather_of_the_day():
+    """
+    Récupère les prévisions météorologiques pour la journée actuelle à partir de l'API MeteoConcept.
+
+    Returns:
+        dict: Dictionnaire contenant les prévisions météorologiques pour la journée actuelle.
+    """
+    response = { 'code': 400, 'error': '', 'data': [] }
+
+    try:
+        req = requests.get(f"{conf['weather_api']['base_url']}?token={conf['weather_api']['api_key']}&insee={conf['weather_api']['insee']}")
+
+        if req.status_code == 200:
+            response['code'] = 200
+            response['data'] = req.json()['forecast'][0]
+
+        else:
+            response['error'] = 'Erreur lors de la récupération des données météorologiques.'
+
+    except Exception as e:
+        response['error'] = f"Erreur lors de la récupération des données météorologiques: {e}"
+
+    return response
+
 @app.route("/")
 def index():
     # Récupérer le nom d'utilisateur à partir de la session
     username = session.get('username')
 
+    weather = get_weather_of_the_day()['data']
+
+    # On récupère le code météo, le nom de la ville et la température
+    weather = {
+        'weather': weather['weather'],
+        'tmin': weather['tmin'],
+        'tmax': weather['tmax']
+    }
+
+    print(weather)
+
     if username:
-        return render_template('index.html', username=username)
+        return render_template('index.html', username=username, weather=weather)
     
     else:
-        return render_template('index.html')
+        return render_template('index.html', weather=weather)
 
 
 @app.route('/login', methods=['GET', 'POST'])

@@ -19,5 +19,11 @@
         "sasha.wilk@ecoles-epsi.net",
         "claire.nguyen@ecoles-epsi.net",
         "h.prevost@ecoles-epsi.net"
-    ]
+    ],
+
+    "weather_api": {
+        "api_key": "84c6d048e7fadf6dd23dcef612780263fef19207a2987163f7a1ca22f5f9a4a1",
+        "base_url": "https://api.meteo-concept.com/api/forecast/daily",
+        "insee": 44109
+    }
 }
