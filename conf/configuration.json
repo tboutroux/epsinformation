@@ -1,0 +1,14 @@
+{
+    "environnement": "recette",
+
+    "database": {
+        "username": "",
+        "password": "",
+        "name": "",
+        "host": ""
+    },
+
+    "allowed_domains": [
+        "ecoles-epsi.net"
+    ]
+}
