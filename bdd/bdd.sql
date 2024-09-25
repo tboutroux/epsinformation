@@ -28,7 +28,7 @@ CREATE TABLE `format` (
 -- Table image
 CREATE TABLE `image` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `contenu` BLOB NOT NULL,
+  `contenu` MEDIUMBLOB NOT NULL,
   `id_format` INT NOT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `FK_format_TO_image` FOREIGN KEY (`id_format`) REFERENCES `format` (`id`)
