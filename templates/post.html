@@ -20,7 +20,7 @@
                         Post Form
                     </div>
                     <div class="card-body">
-                        <form action="{{ url_for('login') }}" method="post">
+                        <form action="{{ url_for('post') }}" method="post" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label for="title" class="form-label">Title</label>
                                 <input type="text" class="form-control" id="title" name="title" required>
@@ -48,6 +48,14 @@
                                     <option value="1">Faible</option>
                                 </select>
                             </div>
+
+                            <div class="mb-3">
+                                <label for="file" class="form-label">Picture</label>
+                                <input type="file" class="form-control" id="file" name="image" accept="image/*" required>
+                            </div>
+
+                            <span class="text-center text-danger">{{ message }}</span>
+                            
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </form>
                     </div>
