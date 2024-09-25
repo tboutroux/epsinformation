@@ -123,10 +123,10 @@ def index():
 
         most_important_post['image'] = image
 
-        print(most_important_post)
+        job_announces = read_lines("post", conditions={"id_type": "4"})
 
     if username:
-        return render_template('index.html', username=username, weather=weather, most_important_post=most_important_post)
+        return render_template('index.html', username=username, weather=weather, most_important_post=most_important_post, job_announces=job_announces)
     
     else:
         return render_template('index.html', weather=weather)
@@ -234,20 +234,30 @@ def post():
             degree = request.form['degree']
             username = session.get('username')
 
+            print(f"Title: {title}")
+
             if not session.get('username'):
                 flash('Vous devez être connecté pour créer un post.', 'warning')
                 return redirect(url_for('login'))
-
-            # Gestion de l'image
-            if 'image' not in request.files:
-                flash('Aucune image sélectionnée.', 'warning')
-                return redirect(request.url)
             
             file = request.files['image']
 
-            if file.filename == '':
-                flash('Aucune image sélectionnée.', 'warning')
-                return redirect(request.url)
+            user_id = read_lines("compte", conditions={"username": username})[0]['id']
+
+            if not file:
+                # Préparer les données du post
+                new_post = {
+                    'titre': title,
+                    'description': content,
+                    'id_type': post_type,
+                    'degre': degree,
+                    'id_compte': user_id,
+                }
+
+                # Insertion du post dans la table "posts"
+                create_line("post", new_post)
+
+                return redirect(url_for('index'))
             
             if file:
                 # Lire les données de l'image
@@ -285,20 +295,6 @@ def post():
 
                 # Récupérer l'ID de l'image insérée
                 image_id = read_lines("image")[-1]['id']
-
-                user_id = read_lines("compte", conditions={"username": username})[0]['id']
-
-                # Préparer les données du post
-                new_post = {
-                    'titre': title,
-                    'description': content,
-                    'id_type': post_type,
-                    'degre': degree,
-                    'id_compte': user_id,
-                }
-
-                # Insertion du post dans la table "posts"
-                create_line("post", new_post)
 
                 # On récupère l'ID du post inséré
                 post_id = read_lines("post")[-1]['id']
