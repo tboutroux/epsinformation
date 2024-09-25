@@ -44,6 +44,8 @@ CREATE TABLE `post` (
   `id_compte` INT NOT NULL,
   `degre` INT NULL,
   `id_type` INT NOT NULL,
+  `date_debut` DATE NULL,
+  `date_fin` DATE NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `FK_compte_TO_post` FOREIGN KEY (`id_compte`) REFERENCES `compte` (`id`),
   CONSTRAINT `FK_type_TO_post` FOREIGN KEY (`id_type`) REFERENCES `type` (`id`)
