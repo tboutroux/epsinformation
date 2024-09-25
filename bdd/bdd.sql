@@ -10,11 +10,12 @@ USE `epsinformation`;
 -- Table compte
 CREATE TABLE `compte` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `role` BIT NOT NULL,
+  `role` TINYINT NOT NULL,
   `username` VARCHAR(255) NOT NULL,
   `nom` VARCHAR(255) NOT NULL,
   `prenom` VARCHAR(255) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
+  `password` VARCHAR(512) NOT NULL,
   PRIMARY KEY (`id`)
 );
 
