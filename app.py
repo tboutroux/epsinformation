@@ -4,6 +4,9 @@ from db import *
 from conf.configuration import conf
 import unidecode
 import requests
+from PIL import Image
+from io import BytesIO
+import base64
 
 app = Flask(__name__)
 app.secret_key = conf['secret_key']
@@ -68,6 +71,11 @@ def get_weather_of_the_day():
 
     return response
 
+# Ajouter un filtre b64encode
+@app.template_filter('b64encode')
+def b64encode_filter(data):
+    return base64.b64encode(data).decode('utf-8')
+
 @app.route("/")
 def index():
     # Récupérer le nom d'utilisateur à partir de la session
@@ -82,10 +90,43 @@ def index():
         'tmax': weather['tmax']
     }
 
-    print(weather)
+    # On récupère le dernier post ayant un degré de 1
+    most_important_post = read_lines("post", conditions={"degre": "3"})
+
+    if most_important_post:
+        most_important_post = most_important_post[-1]
+
+        # On récupère l'image associée au post
+        image = read_lines("post_image", conditions={"id_post": most_important_post['id']})
+
+        if image:
+            image = read_lines("image", conditions={"id": image[0]['id_image']})[0]
+
+            # On convertit les données
+            image_data = image['contenu']
+            image_format = read_lines("format", conditions={"id": image['id_format']})[0]['libelle']
+
+            # On crée un objet Image à partir des données binaires
+            image = Image.open(BytesIO(image_data))
+
+            # On sauvegarde les données de l'image dans des variables
+            image_width, image_height = image.size
+            image_format = image.format
+
+            # On crée un dictionnaire contenant les données de l'image
+            image = {
+                'data': image_data,
+                'width': image_width,
+                'height': image_height,
+                'format': image_format
+            }
+
+        most_important_post['image'] = image
+
+        print(most_important_post)
 
     if username:
-        return render_template('index.html', username=username, weather=weather)
+        return render_template('index.html', username=username, weather=weather, most_important_post=most_important_post)
     
     else:
         return render_template('index.html', weather=weather)
@@ -103,6 +144,7 @@ def login():
 
             if mail == users[0]['email'] and hash_password(password) == users[0]['password']:
                 session['username'] = users[0]['username']
+                session['role'] = users[0]['role']
                 return redirect(url_for('index'))
             else:
                 print('Échec de la connexion. Vérifiez votre nom d\'utilisateur et votre mot de passe.', 'danger')
@@ -144,8 +186,6 @@ def register():
             username = format_username(firstname) + "." + format_username(lastname)
             role = "1" if mail in conf['admins'] else "0"
 
-            print(username)
-
             new_user = {
                 'nom': lastname,
                 'prenom': firstname,
@@ -179,7 +219,13 @@ def register():
         return render_template('register.html')
 
 @app.route('/post', methods=['GET', 'POST'])
-def create_post():
+def post():
+
+    if not session.get('username'):
+        print('Vous devez être connecté pour créer un post.')
+        message = 'Vous devez être connecté pour créer un post.'
+        return redirect(url_for('login', message=message))
+
     if request.method == 'POST':
         try:
             title = request.form['title']
@@ -188,27 +234,93 @@ def create_post():
             degree = request.form['degree']
             username = session.get('username')
 
-            if not username:
+            if not session.get('username'):
                 flash('Vous devez être connecté pour créer un post.', 'warning')
                 return redirect(url_for('login'))
 
-            new_post = {
-                'title': title,
-                'content': content,
-                'type': post_type,
-                'degree': degree,
-                'author': username
-            }
+            # Gestion de l'image
+            if 'image' not in request.files:
+                flash('Aucune image sélectionnée.', 'warning')
+                return redirect(request.url)
+            
+            file = request.files['image']
 
-            create_line("posts", new_post)
-            flash('Post créé avec succès!', 'success')
-            return redirect(url_for('index'))
+            if file.filename == '':
+                flash('Aucune image sélectionnée.', 'warning')
+                return redirect(request.url)
+            
+            if file:
+                # Lire les données de l'image
+                image_data = file.read()
+
+                # On convertit les données de l'image en blob
+                image_data = BytesIO(image_data).read()   
+                
+                # Utilisation de Pillow pour récupérer le format de l'image
+                image = Image.open(BytesIO(image_data))
+                image_format = image.format  # Par exemple, JPEG, PNG
+
+                new_format = {
+                    'libelle': image_format
+                }
+
+                # Vérifier si le format de l'image existe déjà dans la base de données
+                formats = read_lines("format", conditions={"libelle": image_format})
+
+                if not formats:
+                    # Insertion du format dans la table "format"
+                    create_line("format", new_format)
+
+                # On récupère l'ID du format inséré
+                image_format = read_lines("format", conditions={"libelle": image_format})[0]['id']
+
+                # Préparer les données de l'image pour la base de données
+                new_image = {
+                    'contenu': image_data,  # Les données binaires de l'image
+                    'id_format': image_format  # Le format de l'image
+                }
+
+                # Insertion de l'image dans la table "image"
+                create_line("image", new_image)
+
+                # Récupérer l'ID de l'image insérée
+                image_id = read_lines("image")[-1]['id']
+
+                user_id = read_lines("compte", conditions={"username": username})[0]['id']
+
+                # Préparer les données du post
+                new_post = {
+                    'titre': title,
+                    'description': content,
+                    'id_type': post_type,
+                    'degre': degree,
+                    'id_compte': user_id,
+                }
+
+                # Insertion du post dans la table "posts"
+                create_line("post", new_post)
+
+                # On récupère l'ID du post inséré
+                post_id = read_lines("post")[-1]['id']
+
+                # Préparer les données de la relation entre le post et l'image
+                new_post_image = {
+                    'id_post': post_id,
+                    'id_image': image_id
+                }
+
+                # Insertion de la relation dans la table "post_image"
+                create_line("post_image", new_post_image)
+
+                flash('Post créé avec succès!', 'success')
+                return redirect(url_for('index'))
 
         except Exception as e:
             print(f"Error: {e}")
             flash('Une erreur s\'est produite lors de la création du post. Veuillez réessayer.', 'danger')
 
-    return render_template('post.html')
+    username = session.get('username')
+    return render_template('post.html', username=username)
 
 if __name__ == "__main__":
     app.run(debug=True)

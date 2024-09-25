@@ -1,11 +1,41 @@
 @import url(https://fonts.googleapis.com/css?family=Poppins:100,100italic,200,200italic,300,300italic,regular,italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic);
 
+:root {
+    --primary-color: #758291;
+    --secondary-color: #A1B5D6;
+    --third-color: #FFFCF7;
+    --fourth-color: #E5F0D0;
+    --fifth-color: #C3D8B9;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     font-family: 'Poppins', sans-serif;
+}
 
+body {
+    background-color: var(--third-color) !important;
+    color: var(--primary-color);
+}
+
+.btn .btn-secondary {
+    background-color: var(--secondary-color) !important;
+    color: var(--third-color) !important;
+}
+
+.btn .btn-primary {
+    background-color: var(--fourth-color) !important;
+    color: var(--third-color) !important;
+}
+
+.weather {
+    background-color: rgba(161, 181, 214, 0.2);
+}
+
+.calendar {
+    background-color: rgba(195, 216, 185, 0.2);
 }
 
 .row {
