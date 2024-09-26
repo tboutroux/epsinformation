@@ -11,7 +11,8 @@
     },
 
     "allowed_domains": [
-        "ecoles-epsi.net"
+        "ecoles-epsi.net",
+        "ecoles-wis.net"
     ],
 
     "admins": [
