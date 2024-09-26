@@ -352,17 +352,24 @@ def edit_account(username):
             # Récupérer les nouvelles informations du formulaire
             new_firstname = request.form['firstname']
             new_lastname = request.form['lastname']
+            new_password = request.form.get('password')
 
             new_username = f'{format_username(new_firstname)}.{format_username(new_lastname)}'
+
+            # Préparer les données à mettre à jour
+            update_data = {
+                "prenom": new_firstname,
+                "nom": new_lastname,
+                "username": new_username,
+            }
+
+            if new_password:
+                update_data["password"] = hash_password(new_password)
 
             # Mettre à jour les informations dans la base de données
             update_line(
                 "compte",
-                data={
-                    "prenom": new_firstname,
-                    "nom": new_lastname,
-                    "username": new_username,
-                },
+                data=update_data,
                 conditions={"id": user_id}
             )
 
