@@ -80,6 +80,7 @@ def b64encode_filter(data):
 def index():
     # Récupérer le nom d'utilisateur à partir de la session
     username = session.get('username')
+    print(f"Username in session: {username}")
 
     weather = get_weather_of_the_day()['data']
 
@@ -155,17 +156,6 @@ def login():
 
     return render_template('login.html')
 
-@app.route('/account')
-def dashboard():
-    # Récupérer le nom d'utilisateur à partir de la session
-    username = session.get('username')
-    
-    if username:
-        return render_template('dashboard.html', username=username)
-    else:
-        flash('Vous devez vous connecter pour accéder au tableau de bord.', 'warning')
-        return redirect(url_for('login'))
-    
 @app.route('/logout')
 def logout():
     # Supprimer le nom d'utilisateur de la session (déconnexion)
@@ -217,6 +207,7 @@ def register():
     
     else:
         return render_template('register.html')
+
 
 @app.route('/post', methods=['GET', 'POST'])
 def post():
@@ -321,6 +312,120 @@ def post():
 
     username = session.get('username')
     return render_template('post.html', username=username)
+
+@app.route('/account/<username>', methods=['GET', 'POST'])
+def account(username):
+    session_username = session.get('username')
+
+    if not session_username or session_username != username:
+        return redirect(url_for('login'))
+
+    user_info = read_lines("compte", conditions={"username": username})
+
+    if not user_info:
+        flash('Utilisateur non trouvé.', 'danger')
+        return redirect(url_for('login'))
+        
+    username = session.get('username')
+    return render_template('account.html', user=user_info[0], username=username)
+
+@app.route('/edit_account/<username>', methods=['GET', 'POST'])
+def edit_account(username):
+    # Vérifier si l'utilisateur est connecté
+    session_username = session.get('username')
+
+    if not session_username or session_username != username:
+        flash('Vous devez être connecté pour accéder à cette page.', 'danger')
+        return redirect(url_for('login'))
+
+    # Récupérer les informations de l'utilisateur
+    user_info = read_lines("compte", conditions={"username": username})
+
+    if not user_info:
+        flash('Utilisateur non trouvé.', 'danger')
+        return redirect(url_for('account', username=username))
+
+    user_id = user_info[0]['id']
+
+    if request.method == 'POST':
+        try:
+            # Récupérer les nouvelles informations du formulaire
+            new_firstname = request.form['firstname']
+            new_lastname = request.form['lastname']
+
+            new_username = f'{format_username(new_firstname)}.{format_username(new_lastname)}'
+
+            # Mettre à jour les informations dans la base de données
+            update_line(
+                "compte",
+                data={
+                    "prenom": new_firstname,
+                    "nom": new_lastname,
+                    "username": new_username,
+                },
+                conditions={"id": user_id}
+            )
+
+            # Mettre à jour le nom d'utilisateur dans la session
+            session['username'] = new_username
+
+            flash('Informations mises à jour avec succès!', 'success')
+            return redirect(url_for('account', username=new_username)) 
+
+        except Exception as e:
+            flash(f'Une erreur est survenue: {e}', 'danger')
+
+    # Afficher le formulaire avec les informations actuelles
+    return render_template('edit_account.html', user=user_info[0], username=username)
+
+@app.route('/delete_account/<username>', methods=['GET', 'POST'])
+def delete_account(username):
+    # Vérifier si l'utilisateur est connecté
+    session_username = session.get('username')
+
+    if not session_username or session_username != username:
+        flash('Vous devez être connecté pour accéder à cette page.', 'danger')
+        return redirect(url_for('login'))
+
+    # Récupérer les informations de l'utilisateur
+    user_info = read_lines("compte", conditions={"username": username})
+
+    if not user_info:
+        flash('Utilisateur non trouvé.', 'danger')
+        return redirect(url_for('account', username=username))
+
+    user_id = user_info[0]['id']
+    print(f"User ID: {user_id}")
+
+    if request.method == 'POST':
+        try:
+            # Supprimer les posts de l'utilisateur
+            user_posts = read_lines("post", conditions={"id_compte": user_id})
+            for post in user_posts:
+                # Supprimer les relations post-image
+                delete_line("post_image", conditions={"id_post": post['id']})
+                # Supprimer les posts
+                delete_line("post", conditions={"id": post['id']})
+
+            # Supprimer les images orphelines
+            all_images = read_lines("image")
+            for image in all_images:
+                post_image_relation = read_lines("post_image", conditions={"id_image": image['id']})
+                if not post_image_relation:
+                    delete_line("image", conditions={"id": image['id']})
+
+            # Supprimer l'utilisateur de la base de données
+            delete_line("compte", conditions={"id": user_id})
+
+            # Supprimer les informations de session
+            session.pop('username', None)
+            flash('Compte supprimé avec succès!', 'success')
+
+        except Exception as e:
+            flash(f'Une erreur est survenue: {e}', 'danger')
+
+    return redirect('login')
+
 
 if __name__ == "__main__":
     app.run(debug=True)
