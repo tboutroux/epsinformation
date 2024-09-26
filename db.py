@@ -52,7 +52,7 @@ def create_line(table, data):
         cursor.execute(query, list(data.values()))
         cnx.commit()
         print("Record inserted successfully.")
-    except mysql.connector.Error as err:
+    except Exception as err:
         print(f"Error: {err}")
     finally:
         cursor.close()

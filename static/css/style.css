@@ -25,9 +25,28 @@ body {
     color: var(--third-color) !important;
 }
 
-.btn .btn-primary {
-    background-color: var(--fourth-color) !important;
-    color: var(--third-color) !important;
+.btn-primary {
+    background-color: var(--fifth-color);
+    color: var(--second-color);
+    border: solid 1px var(--fourth-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--fourth-color);
+    color: var(--primary-color);
+    border: solid 1px var(--fifth-color);
+}
+
+.btn-danger {
+    background-color: var(--secondary-color);
+    color: var(--third-color);
+    border: solid 1px var(--fourth-color);
+}
+
+.btn-danger:hover {
+    background-color: var(--fourth-color);
+    color: var(--first-color);
+    border: solid 1px var(--fifth-color);
 }
 
 .weather {

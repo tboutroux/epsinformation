@@ -93,6 +93,8 @@ def index():
 
     # On récupère le dernier post ayant un degré de 1
     most_important_post = read_lines("post", conditions={"degre": "3"})
+    job_announces = None
+    posts = None
 
     if most_important_post:
         most_important_post = most_important_post[-1]
@@ -124,10 +126,47 @@ def index():
 
         most_important_post['image'] = image
 
-        print(most_important_post)
+
+    else:
+        most_important_post = None
+
+    job_announces = read_lines("post", conditions={"id_type": "4"})
+    
+    # On recherche les autres posts
+    posts = read_lines("post")[-3:]
+
+    print(posts)
+
+    if posts:
+        for post in posts:
+            # On récupère l'image associée au post
+            image = read_lines("post_image", conditions={"id_post": post['id']})
+
+            if image:
+                image = read_lines("image", conditions={"id": image[0]['id_image']})[0]
+
+                # On convertit les données
+                image_data = image['contenu']
+
+                # On crée un objet Image à partir des données binaires
+                image = Image.open(BytesIO(image_data))
+
+                # On sauvegarde les données de l'image dans des variables
+                image_width, image_height = image.size
+                image_format = image.format
+
+                # On crée un dictionnaire contenant les données de l'image
+                image = {
+                    'data': image_data,
+                    'width': image_width,
+                    'height': image_height,
+                    'format': image_format
+                }
+
+            post['image'] = image
 
     if username:
-        return render_template('index.html', username=username, weather=weather, most_important_post=most_important_post)
+        return render_template('index.html', username=username, weather=weather, most_important_post=most_important_post, job_announces=job_announces, other_posts=posts)
     
     else:
         return render_template('index.html', weather=weather)
@@ -223,22 +262,36 @@ def post():
             content = request.form['content']
             post_type = request.form['type']
             degree = request.form['degree']
+            date_debut = request.form['date_debut']
+            date_fin = request.form['date_fin']
             username = session.get('username')
 
             if not session.get('username'):
                 flash('Vous devez être connecté pour créer un post.', 'warning')
                 return redirect(url_for('login'))
-
-            # Gestion de l'image
-            if 'image' not in request.files:
-                flash('Aucune image sélectionnée.', 'warning')
-                return redirect(request.url)
             
             file = request.files['image']
 
-            if file.filename == '':
-                flash('Aucune image sélectionnée.', 'warning')
-                return redirect(request.url)
+            user_id = read_lines("compte", conditions={"username": username})[0]['id']
+
+            if not file:
+                # Préparer les données du post
+                new_post = {
+                    'titre': title,
+                    'description': content,
+                    'id_type': post_type,
+                    'degre': degree,
+                    'id_compte': user_id,
+                    'date_debut': date_debut if date_debut else None,
+                    'date_fin': date_fin if date_fin else None
+                }
+
+                # Insertion du post dans la table "posts"
+                create_line("post", new_post)
+
+                print('Post créé avec succès!')
+
+                return redirect(url_for('index'))
             
             if file:
                 # Lire les données de l'image
@@ -276,20 +329,6 @@ def post():
 
                 # Récupérer l'ID de l'image insérée
                 image_id = read_lines("image")[-1]['id']
-
-                user_id = read_lines("compte", conditions={"username": username})[0]['id']
-
-                # Préparer les données du post
-                new_post = {
-                    'titre': title,
-                    'description': content,
-                    'id_type': post_type,
-                    'degre': degree,
-                    'id_compte': user_id,
-                }
-
-                # Insertion du post dans la table "posts"
-                create_line("post", new_post)
 
                 # On récupère l'ID du post inséré
                 post_id = read_lines("post")[-1]['id']
@@ -426,6 +465,30 @@ def delete_account(username):
 
     return redirect('login')
 
+@app.route('/delete_post/<id>', methods=['POST'])
+def delete_post(id):
+
+    if not session.get('username'):
+        print('Vous devez être connecté pour supprimer un post.')
+        return redirect(url_for('login'))
+
+    if session.get('role') != 1:
+        print('Vous n\'êtes pas autorisé à supprimer un post.')
+        return redirect(url_for('index'))
+    
+    # Supprimer les relations post_image associées au post
+    post_images = read_lines("post_image", conditions={"id_post": id})
+    for post_image in post_images:
+        image_id = post_image['id_image']
+        # Supprimer l'image associée à la relation post_image
+        delete_line("image", conditions={"id": image_id})
+    # Supprimer les relations post_image du post
+    delete_line("post_image", conditions={"id_post": id})
+    # Supprimer le post de la base de données
+    delete_line("post", conditions={"id": id})
+
+    flash('Post supprimé avec succès!', 'success')
+    return redirect(url_for('index'))
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -4,8 +4,8 @@
   "settings": {
     "width": 2000,
     "height": 2000,
-    "scrollTop": -19,
-    "scrollLeft": -100,
+    "scrollTop": -13.2137,
+    "scrollLeft": -119.9886,
     "zoomLevel": 1,
     "show": 431,
     "database": 4,
@@ -96,7 +96,9 @@
           "080cKrsjMag52p6GzSEXd",
           "zR0N6n4ydXeP0c11BgViu",
           "wrxE27BV7SI59MNznL2bf",
-          "XuqJkBe_YdXQfv5E_FR4l"
+          "XuqJkBe_YdXQfv5E_FR4l",
+          "A3veV7JqarfiQu7-0c-s_",
+          "HAcTbF02XHUwhy9rUM4lR"
         ],
         "seqColumnIds": [
           "p8JXRnCpMCBL8FBTa6G6n",
@@ -106,7 +108,9 @@
           "bKE-_viDO5jLXmI17UO1y",
           "zR0N6n4ydXeP0c11BgViu",
           "wrxE27BV7SI59MNznL2bf",
-          "XuqJkBe_YdXQfv5E_FR4l"
+          "XuqJkBe_YdXQfv5E_FR4l",
+          "A3veV7JqarfiQu7-0c-s_",
+          "HAcTbF02XHUwhy9rUM4lR"
         ],
         "ui": {
           "x": 636,
@@ -117,7 +121,7 @@
           "color": ""
         },
         "meta": {
-          "updateAt": 1727163627984,
+          "updateAt": 1727268966622,
           "createAt": 1727091889130
         }
       },
@@ -282,7 +286,7 @@
           "widthDefault": 60
         },
         "meta": {
-          "updateAt": 1727173075665,
+          "updateAt": 1727172981972,
           "createAt": 1727091719338
         }
       },
@@ -709,7 +713,7 @@
       "Z4jDtjAJ2zmOOgGAeLUPw": {
         "id": "Z4jDtjAJ2zmOOgGAeLUPw",
         "tableId": "-vyi4jiyKBAjE9utUztf1",
-        "name": "mdp",
+        "name": "password",
         "comment": "",
         "dataType": "VARCHAR",
         "default": "",
@@ -722,8 +726,48 @@
           "widthDefault": 60
         },
         "meta": {
-          "updateAt": 1727172816879,
+          "updateAt": 1727259434031,
           "createAt": 1727172794741
+        }
+      },
+      "A3veV7JqarfiQu7-0c-s_": {
+        "id": "A3veV7JqarfiQu7-0c-s_",
+        "tableId": "H9iEdA63DS9jcs9pjN7LV",
+        "name": "date_debut",
+        "comment": "",
+        "dataType": "DATE",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 62,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1727268963902,
+          "createAt": 1727268944897
+        }
+      },
+      "HAcTbF02XHUwhy9rUM4lR": {
+        "id": "HAcTbF02XHUwhy9rUM4lR",
+        "tableId": "H9iEdA63DS9jcs9pjN7LV",
+        "name": "date_fin",
+        "comment": "",
+        "dataType": "DATE",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1727268985461,
+          "createAt": 1727268966622
         }
       }
     },
@@ -748,7 +792,7 @@
             "zR0N6n4ydXeP0c11BgViu"
           ],
           "x": 636,
-          "y": 181,
+          "y": 205,
           "direction": 1
         },
         "meta": {
@@ -766,8 +810,8 @@
           "columnIds": [
             "p8JXRnCpMCBL8FBTa6G6n"
           ],
-          "x": 837,
-          "y": 293,
+          "x": 837.5,
+          "y": 341,
           "direction": 8
         },
         "end": {
@@ -859,8 +903,8 @@
           "columnIds": [
             "XuqJkBe_YdXQfv5E_FR4l"
           ],
-          "x": 1038,
-          "y": 181,
+          "x": 1039,
+          "y": 205,
           "direction": 2
         },
         "meta": {
@@ -909,7 +953,7 @@
       -1,
       {
         "name": 1727091738454,
-        "dataType": 1727173075665,
+        "dataType": 1727172981970,
         "options(notNull)": 1727091775817
       }
     ],
@@ -1203,9 +1247,27 @@
       1727172794740,
       -1,
       {
-        "name": 1727172799705,
+        "name": 1727259434031,
         "dataType": 1727172814893,
         "options(notNull)": 1727172816879
+      }
+    ],
+    "A3veV7JqarfiQu7-0c-s_": [
+      "tableColumnEntities",
+      1727268944894,
+      -1,
+      {
+        "name": 1727268953591,
+        "dataType": 1727268963902
+      }
+    ],
+    "HAcTbF02XHUwhy9rUM4lR": [
+      "tableColumnEntities",
+      1727268966622,
+      -1,
+      {
+        "name": 1727268977138,
+        "dataType": 1727268985460
       }
     ]
   }
