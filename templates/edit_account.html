@@ -21,6 +21,25 @@
             <label for="lastname" class="form-label">Nom</label>
             <input type="text" class="form-control" id="lastname" name="lastname" value="{{ user['nom'] }}">
         </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Mot de passe</label>
+            <div class="input-group">
+            <input type="password" class="form-control" id="password" name="password">
+            <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('password')">
+                <i class="fa fa-eye"></i>
+            </button>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="confirm_password" class="form-label">Confirmer le mot de passe</label>
+            <div class="input-group">
+            <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+            <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('confirm_password')">
+                <i class="fa fa-eye"></i>
+            </button>
+            </div>
+        </div>
+        <div id="password-error" class="text-danger" style="display: none;">Les mots de passe ne correspondent pas.</div>
         <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
     </form>
     
