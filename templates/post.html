@@ -35,8 +35,8 @@
                                     <option value="" disabled selected>Select type</option>
                                     <option value="1">BDE</option>
                                     <option value="2">Mydil</option>
-                                    <option value="3">Offres d'emploi</option>
-                                    <option value="4">Info campus</option>
+                                    <option value="3">Info campus</option>
+                                    <option value="4">Offres d'emploi</option>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -49,9 +49,22 @@
                                 </select>
                             </div>
 
-                            <div class="mb-3">
+                            <div id="date" style="display:none">
+                                <div class="mb-3">
+                                    <label for="date" class="form-label">Date Début</label>
+                                    <input type="date" class="form-control" id="date_debut" name="date_debut">
+                                </div> 
+    
+                                <div class="mb-3">
+                                    <label for="date" class="form-label">Date Fin</label>
+                                    <input type="date" class="form-control" id="date_fin" name="date_fin">
+                                </div>
+                            </div>
+
+
+                            <div class="mb-3" id="image" style="display:block">
                                 <label for="file" class="form-label">Picture</label>
-                                <input type="file" class="form-control" id="file" name="image" accept="image/*" required>
+                                <input type="file" class="form-control" id="file" name="image" accept="image/*">
                             </div>
 
                             <span class="text-center text-danger">{{ message }}</span>
@@ -63,5 +76,8 @@
             </div>
         </div>
     </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
 </body>
 </html>

@@ -10,11 +10,12 @@ USE `epsinformation`;
 -- Table compte
 CREATE TABLE `compte` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `role` BIT NOT NULL,
+  `role` TINYINT NOT NULL,
   `username` VARCHAR(255) NOT NULL,
   `nom` VARCHAR(255) NOT NULL,
   `prenom` VARCHAR(255) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
+  `password` VARCHAR(512) NOT NULL,
   PRIMARY KEY (`id`)
 );
 
@@ -43,6 +44,8 @@ CREATE TABLE `post` (
   `id_compte` INT NOT NULL,
   `degre` INT NULL,
   `id_type` INT NOT NULL,
+  `date_debut` DATE NULL,
+  `date_fin` DATE NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `FK_compte_TO_post` FOREIGN KEY (`id_compte`) REFERENCES `compte` (`id`),
   CONSTRAINT `FK_type_TO_post` FOREIGN KEY (`id_type`) REFERENCES `type` (`id`)
