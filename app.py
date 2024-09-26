@@ -297,6 +297,21 @@ def post():
                 return redirect(url_for('index'))
             
             if file:
+                
+                # Préparer les données du post
+                new_post = {
+                    'titre': title,
+                    'description': content,
+                    'id_type': post_type,
+                    'degre': degree,
+                    'id_compte': user_id,
+                    'date_debut': date_debut if date_debut else None,
+                    'date_fin': date_fin if date_fin else None
+                }
+
+                # Insertion du post
+                create_line("post", new_post)
+
                 # Lire les données de l'image
                 image_data = file.read()
 
@@ -394,17 +409,24 @@ def edit_account(username):
             # Récupérer les nouvelles informations du formulaire
             new_firstname = request.form['firstname']
             new_lastname = request.form['lastname']
+            new_password = request.form.get('password')
 
             new_username = f'{format_username(new_firstname)}.{format_username(new_lastname)}'
+
+            # Préparer les données à mettre à jour
+            update_data = {
+                "prenom": new_firstname,
+                "nom": new_lastname,
+                "username": new_username,
+            }
+
+            if new_password:
+                update_data["password"] = hash_password(new_password)
 
             # Mettre à jour les informations dans la base de données
             update_line(
                 "compte",
-                data={
-                    "prenom": new_firstname,
-                    "nom": new_lastname,
-                    "username": new_username,
-                },
+                data=update_data,
                 conditions={"id": user_id}
             )
 
