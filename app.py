@@ -234,7 +234,7 @@ def register():
 
             elif mail in users :
                 message = 'L\'adresse e-mail est déjà utilisée ou n\'est pas autorisée.'
-            else:
+            elif mail.split('@')[1] not in conf['allowed_domains']:
 
                 create_line("compte", new_user)
                 message = 'Inscription réussie! Vous pouvez maintenant vous connecter.'
@@ -297,6 +297,21 @@ def post():
                 return redirect(url_for('index'))
             
             if file:
+                
+                # Préparer les données du post
+                new_post = {
+                    'titre': title,
+                    'description': content,
+                    'id_type': post_type,
+                    'degre': degree,
+                    'id_compte': user_id,
+                    'date_debut': date_debut if date_debut else None,
+                    'date_fin': date_fin if date_fin else None
+                }
+
+                # Insertion du post
+                create_line("post", new_post)
+
                 # Lire les données de l'image
                 image_data = file.read()
 
