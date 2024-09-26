@@ -234,7 +234,7 @@ def register():
 
             elif mail in users :
                 message = 'L\'adresse e-mail est déjà utilisée ou n\'est pas autorisée.'
-            else:
+            elif mail.split('@')[1] not in conf['allowed_domains']:
 
                 create_line("compte", new_user)
                 message = 'Inscription réussie! Vous pouvez maintenant vous connecter.'
