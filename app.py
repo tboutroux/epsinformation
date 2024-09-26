@@ -82,6 +82,9 @@ def index():
     username = session.get('username')
     print(f"Username in session: {username}")
 
+    if not username:
+        return redirect('login')
+
     weather = get_weather_of_the_day()['data']
 
     # On récupère le code météo, le nom de la ville et la température
