@@ -150,11 +150,10 @@ jobs:
         with:
           target: 'http://localhost:5000'
           fail_action: false
-          report_html: true
       - name: Archive ZAP report
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
-          path: report.html
+          path: report_html.html
 
 
