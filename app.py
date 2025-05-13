@@ -83,7 +83,7 @@ def index():
     print(f"Username in session: {username}")
 
     if not username:
-        return redirect('login')
+        return redirect(url_for('login'))
 
     weather = get_weather_of_the_day()['data']
 
