@@ -220,6 +220,28 @@ jobs:
         echo "==== curl -v http://localhost:5000/ ===="
         curl -v http://localhost:5000/ || echo "curl failed"
 
+    - name: Debug - curl binary and hash
+      run: |
+        echo "==== which curl ===="
+        which curl
+        ls -l $(which curl)
+        sha256sum $(which curl)
+        echo "==== type curl ===="
+        type curl
+        echo "==== alias ===="
+        alias
+
+    - name: Debug - curl with explicit path
+      run: |
+        echo "==== curl -v http://localhost:5000/ ===="
+        curl -v http://localhost:5000/
+        echo "==== curl -v http://127.0.0.1:5000/ ===="
+        curl -v http://127.0.0.1:5000/
+
+    - name: Debug - netcat raw HTTP request
+      run: |
+        echo -e "GET / HTTP/1.1\r\nHost: localhost:5000\r\n\r\n" | nc localhost 5000 || echo "nc failed"
+
     - name: Run end-to-end tests
       run: |
         export LC_ALL=C.UTF-8
