@@ -242,6 +242,10 @@ jobs:
       run: |
         echo -e "GET / HTTP/1.1\r\nHost: localhost:5000\r\n\r\n" | nc localhost 5000 || echo "nc failed"
 
+    - name: Debug - curl raw HTTP request
+      run: |
+        printf 'GET / HTTP/1.1\r\nHost: localhost:5000\r\n\r\n' | nc localhost 5000 || echo "nc failed"
+
     - name: Run end-to-end tests
       run: |
         export LC_ALL=C.UTF-8
