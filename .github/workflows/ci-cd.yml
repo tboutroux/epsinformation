@@ -125,6 +125,16 @@ jobs:
       run: |
         python -m playwright install chromium
     
+    - name: Debug - Show open ports before Flask
+      run: |
+        echo "==== Ports ouverts avant Flask ===="
+        ss -tulpen || netstat -tulpen || netstat -an
+
+    - name: Debug - Show Python processes before Flask
+      run: |
+        echo "==== Processus Python avant Flask ===="
+        ps aux | grep python || ps -ef | grep python
+
     - name: Load database schema
       run: |
         mysql -h127.0.0.1 -uroot -proot epsinformation < bdd/bdd.sql
@@ -149,10 +159,23 @@ jobs:
         # Afficher le contenu du fichier de configuration pour déboguer
         cat conf/config.json
         
+        # Afficher la variable FLASK_APP et la version de Flask
+        echo "FLASK_APP=$FLASK_APP"
+        python -m flask --version
+        
         # Démarrer le serveur Flask et attendre qu'il soit prêt
         export PYTHONPATH=$PYTHONPATH:$(pwd)
-        python -m flask --app app run --host=127.0.0.1 --port=5000 > flask.log 2>&1 &
+        python -m flask --app app run --host=0.0.0.0 --port=5000 > flask.log 2>&1 &
         echo $! > flask.pid
+        
+        # Debug : afficher le PID
+        echo "PID Flask: $(cat flask.pid)"
+        # Debug : ports ouverts après lancement Flask
+        ss -tulpen || netstat -tulpen || netstat -an
+        # Debug : processus Python après lancement Flask
+        ps aux | grep python || ps -ef | grep python
+        # Debug : table de routage
+        ip route || route -n
         
         # Attendre que le serveur démarre avec vérification active
         echo "Waiting for Flask server to start..."
@@ -178,6 +201,11 @@ jobs:
           cat flask.log
           exit 1
         fi
+    - name: Debug - curl verbose before E2E tests
+      run: |
+        echo "==== curl -v http://localhost:5000/ ===="
+        curl -v http://localhost:5000/ || echo "curl failed"
+
     - name: Run end-to-end tests
       run: |
         # Double-check server availability before running tests
@@ -191,6 +219,10 @@ jobs:
         sleep 2
         PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/end_to_end_test.py -v || echo "E2E tests failed but continuing pipeline"
         
+    - name: Debug - Playwright version
+      run: |
+        python -m playwright --version
+
     - name: Show Flask logs after E2E tests
       if: always()
       run: |
