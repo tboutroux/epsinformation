@@ -19,6 +19,13 @@ CREATE TABLE `compte` (
   PRIMARY KEY (`id`)
 );
 
+-- Table type
+CREATE TABLE `type` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `intitule` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
 -- Table format
 CREATE TABLE `format` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -58,11 +65,4 @@ CREATE TABLE `post_image` (
   PRIMARY KEY (`id_post`, `id_image`),
   CONSTRAINT `FK_post_TO_post_image` FOREIGN KEY (`id_post`) REFERENCES `post` (`id`),
   CONSTRAINT `FK_image_TO_post_image` FOREIGN KEY (`id_image`) REFERENCES `image` (`id`)
-);
-
--- Table type
-CREATE TABLE `type` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `intitule` VARCHAR(255) NOT NULL,
-  PRIMARY KEY (`id`)
 );
