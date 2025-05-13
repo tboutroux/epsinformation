@@ -76,8 +76,9 @@ def get_weather_of_the_day():
 def b64encode_filter(data):
     return base64.b64encode(data).decode('utf-8')
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
+    print(f"[INDEX] session: {dict(session)}")
     # Récupérer le nom d'utilisateur à partir de la session
     username = session.get('username')
     print(f"Username in session: {username}")
@@ -177,6 +178,7 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    print(f"[LOGIN] method: {request.method}, form: {request.form}, session: {dict(session)}")
     if request.method == 'POST':
         try:
 
@@ -184,16 +186,18 @@ def login():
             mail = request.form['email']
 
             users = read_lines("compte", conditions={"email": mail})
+            print(f"[LOGIN-POST] users: {users}")
 
             if mail == users[0]['email'] and hash_password(password) == users[0]['password']:
+                print("[LOGIN-POST] Login success, redirecting to index")
                 session['username'] = users[0]['username']
                 session['role'] = users[0]['role']
                 return redirect(url_for('index'))
             else:
-                print('Échec de la connexion. Vérifiez votre nom d\'utilisateur et votre mot de passe.', 'danger')
+                print('[LOGIN-POST] Échec de la connexion. Vérifiez votre nom d\'utilisateur et votre mot de passe.', 'danger')
 
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"[LOGIN-POST] Error: {e}")
             flash('Une erreur s\'est produite lors de la connexion. Veuillez réessayer.', 'danger')
 
     return render_template('login.html')
@@ -207,6 +211,7 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    print(f"[REGISTER] method: {request.method}, form: {request.form}, session: {dict(session)}")
     message = ''
     if request.method == 'POST':
 
@@ -226,22 +231,27 @@ def register():
                 'password': hash_password(password),
                 'role': role
             }
+            print(f"[REGISTER-POST] new_user: {new_user}")
 
             users = read_lines("compte", conditions={"nom": lastname, "prenom": firstname, "email": mail})
 
             if username in users:
+                print("[REGISTER-POST] Username déjà utilisé")
                 message = 'Le nom d\'utilisateur est déjà utilisé.'
 
             elif mail in users :
+                print("[REGISTER-POST] Email déjà utilisé")
                 message = 'L\'adresse e-mail est déjà utilisée ou n\'est pas autorisée.'
             elif mail.split('@')[1] not in conf['allowed_domains']:
+                print("[REGISTER-POST] Domaine non autorisé")
 
                 create_line("compte", new_user)
+                print("[REGISTER-POST] Inscription réussie, redirecting to login")
                 message = 'Inscription réussie! Vous pouvez maintenant vous connecter.'
                 return redirect(url_for('login'))
             
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"[REGISTER-POST] Error: {e}")
             flash('Une erreur s\'est produite lors de l\'inscription. Veuillez réessayer.', 'danger')
 
     if message:
