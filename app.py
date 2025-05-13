@@ -515,5 +515,31 @@ def delete_post(id):
     flash('Post supprimé avec succès!', 'success')
     return redirect(url_for('index'))
 
+@app.route('/bde')
+def bde():
+    # Vérifier si l'utilisateur est connecté
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('login'))
+
+    # Récupérer les posts liés au BDE (id_type = 2)
+    bde_posts = read_lines("post", conditions={"id_type": "1"})
+
+    # Ajouter les images associées aux posts BDE
+    for post in bde_posts:
+        # Récupérer la relation post-image
+        post_image = read_lines("post_image", conditions={"id_post": post['id']})
+        
+        if post_image:
+            # Récupérer l'image associée
+            image_info = read_lines("image", conditions={"id": post_image[0]['id_image']})
+            if image_info:
+                # Extraire les données binaires et lier l'image au post
+                image_data = image_info[0]['contenu']  # Assuming 'contenu' contains binary data
+                post['image'] = image_data  # Stocker directement les données binaires dans le post
+
+    # Rendre la page 'bde.html' avec les posts et l'utilisateur connecté
+    return redirect(url_for('bde'))  # Rediriger vers la page bde après traitement
+
 if __name__ == "__main__":
     app.run(debug=True)

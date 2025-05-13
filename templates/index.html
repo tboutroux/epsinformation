@@ -62,15 +62,14 @@
                             </div>
                             <div class="card-body d-flex justify-content-between align-items-center">
 
-                                {% if most_important_post['date_debut'] and most_important_post['date_fin'] %}
-                                    <div class="d-flex">
-                                        <p class="text-muted">{{ most_important_post['date_debut'] }}</p>
-                                        <span class="mx-2"><i class="fa fa-solid fa-arrow-right"></i></span>
-                                        <p class="text-muted">{{ most_important_post['date_fin'] }}</p>
-                                    </div>
-                                {% endif %}
-
                                 <div>
+                                    {% if most_important_post['date_debut'] and most_important_post['date_fin'] %}
+                                        <div class="d-flex">
+                                            <p class="text-muted">{{ most_important_post['date_debut'] }}</p>
+                                            <span class="mx-2"><i class="fa fa-solid fa-arrow-right"></i></span>
+                                            <p class="text-muted">{{ most_important_post['date_fin'] }}</p>
+                                        </div>
+                                    {% endif %}
                                     <p class="card-text">
                                         {{ most_important_post['description'] }}
                                     </p>
