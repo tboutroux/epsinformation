@@ -125,28 +125,6 @@ jobs:
       run: |
         python -m playwright install chromium
     
-    - name: Debug - Show locale and env
-      run: |
-        echo "==== Locale ===="
-        locale || echo "locale not found"
-        echo "==== Env ===="
-        env
-        echo "==== curl version ===="
-        curl --version
-        echo "==== Flask & Werkzeug version ===="
-        pip freeze | grep Flask || true
-        pip freeze | grep Werkzeug || true
-
-    - name: Debug - Show open ports before Flask
-      run: |
-        echo "==== Ports ouverts avant Flask ===="
-        ss -tulpen || netstat -tulpen || netstat -an
-
-    - name: Debug - Show Python processes before Flask
-      run: |
-        echo "==== Processus Python avant Flask ===="
-        ps aux | grep python || ps -ef | grep python
-
     - name: Load database schema
       run: |
         mysql -h127.0.0.1 -uroot -proot epsinformation < bdd/bdd.sql
@@ -182,15 +160,6 @@ jobs:
         python -m flask --app app run --host=0.0.0.0 --port=5000 > flask.log 2>&1 &
         echo $! > flask.pid
         
-        # Debug : afficher le PID
-        echo "PID Flask: $(cat flask.pid)"
-        # Debug : ports ouverts après lancement Flask
-        ss -tulpen || netstat -tulpen || netstat -an
-        # Debug : processus Python après lancement Flask
-        ps aux | grep python || ps -ef | grep python
-        # Debug : table de routage
-        ip route || route -n
-        
         # Attendre que le serveur démarre avec vérification active
         echo "Waiting for Flask server to start..."
         max_attempts=60
@@ -215,37 +184,7 @@ jobs:
           cat flask.log
           exit 1
         fi
-    - name: Debug - curl verbose before E2E tests
-      run: |
-        echo "==== curl -v http://localhost:5000/ ===="
-        curl -v http://localhost:5000/ || echo "curl failed"
-
-    - name: Debug - curl binary and hash
-      run: |
-        echo "==== which curl ===="
-        which curl
-        ls -l $(which curl)
-        sha256sum $(which curl)
-        echo "==== type curl ===="
-        type curl
-        echo "==== alias ===="
-        alias
-
-    - name: Debug - curl with explicit path
-      run: |
-        echo "==== curl -v http://localhost:5000/ ===="
-        curl -v http://localhost:5000/
-        echo "==== curl -v http://127.0.0.1:5000/ ===="
-        curl -v http://127.0.0.1:5000/
-
-    - name: Debug - netcat raw HTTP request
-      run: |
-        echo -e "GET / HTTP/1.1\r\nHost: localhost:5000\r\n\r\n" | nc localhost 5000 || echo "nc failed"
-
-    - name: Debug - curl raw HTTP request
-      run: |
-        printf 'GET / HTTP/1.1\r\nHost: localhost:5000\r\n\r\n' | nc localhost 5000 || echo "nc failed"
-
+ 
     - name: Run end-to-end tests
       run: |
         export LC_ALL=C.UTF-8
@@ -261,10 +200,7 @@ jobs:
         sleep 2
         DEBUG=pw:api PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/end_to_end_test.py -v || echo "E2E tests failed but continuing pipeline"
         
-    - name: Debug - Playwright version
-      run: |
-        python -m playwright --version
-
+   
     - name: Show Flask logs after E2E tests
       if: always()
       run: |
