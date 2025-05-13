@@ -133,7 +133,7 @@ jobs:
       run: |
         mysql -h127.0.0.1 -uroot -proot epsinformation << EOF
         INSERT INTO compte (role, username, nom, prenom, email, password) 
-        VALUES (1, 'testprenom.testnom', 'TestNom', 'TestPrenom', 'testuser_e2e@example.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92');
+        VALUES (1, 'testprenom.testnom', 'TestNom', 'TestPrenom', 'testuser_e2e@example.com', '26395d2cb7c2586dbef2dd40a8903c837134cabc5e78c8b4e874566d1375007d07c7e54f757ad2167079075d0658009853d7f30c0b1ecb7c10208e49f1f6b1ca');
         
         INSERT INTO compte (role, username, nom, prenom, email, password) 
         VALUES (1, 'admin', 'Admin', 'Admin', 'test@test.test', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08');
