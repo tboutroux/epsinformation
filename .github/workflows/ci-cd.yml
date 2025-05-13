@@ -66,7 +66,10 @@ jobs:
           playwright install --with-deps
       - name: Start Flask server
         run: |
-          nohup python app.py &
+          nohup python app.py > nohup.out 2>&1 &
+      - name: List files after server start
+        run: |
+          ls -l
       - name: Wait for server to be ready
         run: |
           for i in {1..60}; do
