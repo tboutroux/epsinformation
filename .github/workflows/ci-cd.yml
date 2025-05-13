@@ -149,12 +149,16 @@ jobs:
             echo '==== Flask server log (if any) ===='
             cat nohup.out || echo 'No nohup.out log found.'
             exit 1
-          fi      
+          fi
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
         with:
           target: 'http://localhost:5000'
           fail_action: false
           allow_issue_writing: false
-          cmd_options: '-n'
+          artifact_name: 'zap-scan-report'
+      - name: Cleanup ZAP reports
+        run: |
+          rm -f report_html.html report_json.json report_md.md
+        if: always()
 
