@@ -12,14 +12,16 @@
 
     "allowed_domains": [
         "ecoles-epsi.net",
-        "ecoles-wis.net"
+        "ecoles-wis.net",
+        "@test.test"
     ],
 
     "admins": [
         "theo.boutroux@ecoles-epsi.net",
         "sasha.wilk@ecoles-epsi.net",
         "claire.nguyen@ecoles-epsi.net",
-        "h.prevost@ecoles-epsi.net"
+        "h.prevost@ecoles-epsi.net",
+        "test@test.test"
     ],
 
     "weather_api": {
