@@ -55,11 +55,24 @@ jobs:
         # Initialiser une configuration minimale requise pour l'application
         mkdir -p conf
         echo '{"secret_key": "test-secret-key", "weather_api": {"base_url": "http://test", "api_key": "test", "insee": "test"}}' > conf/config.json
+        
+        # Exporter la variable PYTHONPATH correctement
+        export PYTHONPATH=$PYTHONPATH:$(pwd)
+        
         # Démarrer le serveur Flask en mode debug et attendre qu'il soit prêt
-        nohup PYTHONPATH=$PYTHONPATH:$(pwd) FLASK_DEBUG=1 python -m flask --app app run --host=0.0.0.0 &
-        sleep 10
-        # Vérifier que le serveur est bien démarré
-        curl -v http://localhost:5000/ || echo "Server might not be running properly"
+        nohup python -m flask --app app run --host=0.0.0.0 &
+        
+        # Attendre que le serveur démarre
+        echo "Waiting for Flask server to start..."
+        sleep 15
+        
+        # Vérifier que le serveur est bien démarré et échouer si ce n'est pas le cas
+        if ! curl -s http://localhost:5000/ > /dev/null; then
+          echo "Flask server failed to start properly"
+          exit 1
+        else
+          echo "Flask server started successfully"
+        fi
         
     - name: Run end-to-end tests
       run: |
