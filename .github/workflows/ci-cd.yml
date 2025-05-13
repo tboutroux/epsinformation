@@ -64,6 +64,9 @@ jobs:
           pip install -r requirements.txt
           pip install pytest playwright
           playwright install --with-deps
+      - name: Clean database before E2E tests
+        run: |
+          python tests/clean_db.py
       - name: Start Flask server
         run: |
           nohup python app.py --host=0.0.0.0 --port=5000 --no-debug > nohup.out 2>&1 &

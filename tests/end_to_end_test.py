@@ -2,6 +2,17 @@ import pytest
 from playwright.sync_api import sync_playwright
 
 
+def run_with_assertion(page, assertion_func):
+    try:
+        assertion_func()
+    except Exception as e:
+        print("\n===== Playwright DEBUG: page content =====\n")
+        print(page.content())
+        page.screenshot(path="playwright_error.png")
+        print("Screenshot saved as playwright_error.png")
+        raise e
+
+
 def test_register_and_login():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -22,7 +33,7 @@ def test_register_and_login():
         page.click('button[type="submit"]')
         # Vérifie qu'on arrive sur la page d'accueil (index)
         page.wait_for_url("http://localhost:5000/")
-        assert "Bienvenue" in page.content() or "Epsinformation" in page.title()
+        run_with_assertion(page, lambda: ("Bienvenue" in page.content() or "Epsinformation" in page.title()))
         browser.close()
 
 
@@ -48,7 +59,7 @@ def test_logout_and_redirect():
         
         # Vérifier la redirection vers la page d'accueil (login ou index selon logique)
         page.wait_for_url("**/login")
-        assert "Connexion" in page.content() or "Epsinformation" in page.title()
+        run_with_assertion(page, lambda: ("Connexion" in page.content() or "Epsinformation" in page.title()))
         browser.close()
 
 
@@ -86,8 +97,8 @@ def test_edit_profile():
 
         # Vérifier la redirection et la présence du nouveau nom/prénom
         page.wait_for_url("http://localhost:5000/account/testprenommodif.testnommodif")
-        assert "TestPrenomModif" in page.content()
-        assert "TestNomModif" in page.content()
+        run_with_assertion(page, lambda: "TestPrenomModif" in page.content())
+        run_with_assertion(page, lambda: "TestNomModif" in page.content())
         browser.close()
 
 
@@ -120,7 +131,7 @@ def test_delete_account():
 
         # Vérifier la redirection vers la page de login
         page.wait_for_url("**/login")
-        assert "Connexion" in page.content() or "Epsinformation" in page.title()
+        run_with_assertion(page, lambda: ("Connexion" in page.content() or "Epsinformation" in page.title()))
         browser.close()
 
 
@@ -150,8 +161,8 @@ def test_create_post():
 
         # Vérifier la redirection vers la page d'accueil et la présence du post
         page.wait_for_url("http://localhost:5000/")
-        assert "Titre E2E" in page.content()
-        assert "Contenu du post E2E" in page.content()
+        run_with_assertion(page, lambda: "Titre E2E" in page.content())
+        run_with_assertion(page, lambda: "Contenu du post E2E" in page.content())
         browser.close()
 
 def test_delete_post():
@@ -166,7 +177,7 @@ def test_delete_post():
         page.wait_for_url("http://localhost:5000/")
 
         # Vérifier la présence du post
-        assert "Titre E2E" in page.content()
+        run_with_assertion(page, lambda: "Titre E2E" in page.content())
 
         # Trouver la carte contenant le titre "Titre E2E" et cliquer sur son bouton de suppression
         card_headers = page.locator('.card-header')
@@ -184,5 +195,5 @@ def test_delete_post():
 
         # Attendre le rechargement et vérifier la disparition du post
         page.wait_for_url("http://localhost:5000/")
-        assert "Titre E2E" not in page.content()
+        run_with_assertion(page, lambda: "Titre E2E" not in page.content())
         browser.close()
