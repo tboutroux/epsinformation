@@ -178,7 +178,7 @@ jobs:
           cat flask.log
           exit 1
         fi
-      - name: Run end-to-end tests
+    - name: Run end-to-end tests
       run: |
         # Double-check server availability before running tests
         if ! curl -s http://localhost:5000/ > /dev/null; then
