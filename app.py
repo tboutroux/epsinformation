@@ -542,4 +542,16 @@ def bde():
     return redirect(url_for('bde'))  # Rediriger vers la page bde après traitement
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    import sys
+    host = "127.0.0.1"
+    port = 5000
+    debug = True
+    # Permet de passer --host et --port en argument pour le CI
+    for i, arg in enumerate(sys.argv):
+        if arg.startswith("--host="):
+            host = arg.split("=")[1]
+        if arg.startswith("--port="):
+            port = int(arg.split("=")[1])
+        if arg == "--no-debug":
+            debug = False
+    app.run(host=host, port=port, debug=debug, use_reloader=False)
