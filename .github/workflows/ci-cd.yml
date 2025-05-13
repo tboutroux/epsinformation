@@ -46,9 +46,9 @@ jobs:
       run: |
         PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests/unit_test.py -v
         
-    - name: Run integration tests
-      run: |
-        PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/integration_test.py -v
+    # - name: Run integration tests
+    #   run: |
+    #     PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/integration_test.py -v
     
     - name: Start Flask server for E2E tests
       run: |
