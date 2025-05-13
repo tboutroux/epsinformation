@@ -44,6 +44,19 @@ jobs:
           pip install -r requirements.txt
           pip install pytest playwright
           playwright install --with-deps
+      - name: Start Flask server
+        run: |
+          nohup python app.py &
+      - name: Wait for server to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:5000 > /dev/null; then
+              echo "Server is up!"
+              break
+            fi
+            echo "Waiting for server..."
+            sleep 1
+          done
       - name: Run end-to-end tests
         run: pytest tests/end_to_end_test.py
 
