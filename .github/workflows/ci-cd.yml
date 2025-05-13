@@ -151,12 +151,12 @@ jobs:
           target: 'http://localhost:5000'
           fail_action: false
           allow_issue_writing: false
-          artifact_name: zap-report
+          artifact_name: zap_report
       - name: Archive ZAP reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: zap-report
+          name: zap_report
           path: |
             report_html.html
             report_json.json
