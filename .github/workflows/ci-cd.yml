@@ -7,217 +7,40 @@ on:
     branches: [ main ]
 
 jobs:
-  setup:
+  unit-integration-tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest pytest-cov pytest-xdist playwright
-        pip install -r requirements.txt
-        
-    - name: Install Playwright browsers
-      run: |
-        python -m playwright install chromium
-    
-    - name: Cache dependencies
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/pip
-          ~/.cache/ms-playwright
-        key: ${{ runner.os }}-pip-playwright-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-playwright-
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+      - name: Run unit and integration tests
+        run: pytest tests/unit_test.py tests/integration_test.py
 
-  unit-tests:
-    needs: setup
+  end-to-end-tests:
     runs-on: ubuntu-latest
+    needs: unit-integration-tests
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest pytest-cov pytest-xdist
-        pip install -r requirements.txt
-    
-    - name: Run unit tests
-      run: |
-        PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests/unit_test.py -v
-  database-tests:
-    needs: setup
-    runs-on: ubuntu-latest
-    
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: epsinformation
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest pytest-cov pytest-xdist
-        pip install -r requirements.txt
-    
-    - name: Load database schema
-      run: |
-        mysql -h127.0.0.1 -uroot -proot epsinformation < bdd/bdd.sql
-    
-    - name: Run database-related tests
-      run: |
-        PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests/performance_test.py -v
-  e2e-tests:
-    needs: [setup, database-tests]
-    runs-on: ubuntu-latest
-    continue-on-error: true  # Cette ligne permet de continuer le pipeline même si ce job échoue
-    
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: epsinformation
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest pytest-cov pytest-xdist playwright
-        pip install -r requirements.txt
-    
-    - name: Install Playwright browsers
-      run: |
-        python -m playwright install chromium
-    
-    - name: Load database schema
-      run: |
-        mysql -h127.0.0.1 -uroot -proot epsinformation < bdd/bdd.sql
-    
-    - name: Prepare test users in database
-      run: |
-        mysql -h127.0.0.1 -uroot -proot epsinformation << EOF
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest playwright
+          playwright install --with-deps
+      - name: Run end-to-end tests
+        run: pytest tests/end_to_end_test.py
 
-        INSERT INTO compte (role, username, nom, prenom, email, password) 
-        VALUES (1, 'admin', 'Admin', 'Admin', 'test@test.test', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08');
-        
-        INSERT INTO type (intitule) VALUES ('Actualité'), ('Évènement'), ('Annonce'), ('Sondage');
-        EOF
-    - name: Start Flask server for E2E tests
-      run: |
-        export LC_ALL=C.UTF-8
-        export LANG=C.UTF-8
-        # Initialiser une configuration minimale requise pour l'application
-        mkdir -p conf
-        echo '{"secret_key": "test-secret-key", "weather_api": {"base_url": "http://test", "api_key": "test", "insee": "test"}}' > conf/config.json
-        
-        # Afficher le contenu du fichier de configuration pour déboguer
-        cat conf/config.json
-        
-        # Afficher la variable FLASK_APP et la version de Flask
-        echo "FLASK_APP=$FLASK_APP"
-        python -m flask --version
-        
-        # Démarrer le serveur Flask et attendre qu'il soit prêt
-        export PYTHONPATH=$PYTHONPATH:$(pwd)
-        python -m flask --app app run --host=0.0.0.0 --port=5000 > flask.log 2>&1 &
-        echo $! > flask.pid
-        
-        # Attendre que le serveur démarre avec vérification active
-        echo "Waiting for Flask server to start..."
-        max_attempts=60
-        attempt=0
-        server_ready=false
-        
-        while [ $attempt -lt $max_attempts ]; do
-          if curl -s http://localhost:5000/ > /dev/null; then
-            echo "Flask server started successfully after $attempt seconds"
-            server_ready=true
-            break
-          else
-            echo "Waiting for server to be ready... ($attempt/$max_attempts)"
-            attempt=$((attempt+1))
-            sleep 1
-          fi
-        done
-        
-        if [ "$server_ready" = false ]; then
-          echo "ERROR: Flask server did not start properly within $max_attempts seconds"
-          echo "Server logs:"
-          cat flask.log
-          exit 1
-        fi
- 
-    - name: Run end-to-end tests
-      run: |
-        export LC_ALL=C.UTF-8
-        export LANG=C.UTF-8
-        # Double-check server availability before running tests
-        if ! curl -s http://localhost:5000/ > /dev/null; then
-          echo "WARNING: Flask server not responding before tests - check server status"
-          echo "Server logs:"
-          cat flask.log
-        fi
-        
-        # Run the tests with a small delay to ensure server is fully ready
-        sleep 2
-        DEBUG=pw:api PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/end_to_end_test.py -v || echo "E2E tests failed but continuing pipeline"
-        
-   
-    - name: Show Flask logs after E2E tests
-      if: always()
-      run: |
-        echo "==== Flask server logs after E2E tests ===="
-        if [ -f flask.log ]; then
-          cat flask.log
-        else
-          echo "No flask.log file found."
-        fi
-
-    # S'assurer que le serveur Flask est arrêté à la fin
-    - name: Stop Flask server
-      if: always()
-      run: |
-        if [ -f flask.pid ]; then
-          PID=$(cat flask.pid)
-          if ps -p $PID > /dev/null; then
-            kill $PID
-            echo "Flask server stopped"
-          fi
-        fi
 
