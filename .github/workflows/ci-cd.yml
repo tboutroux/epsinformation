@@ -7,19 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  setup:
     runs-on: ubuntu-latest
-    
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: epsinformation
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
     - uses: actions/checkout@v3
     
@@ -37,11 +26,110 @@ jobs:
     - name: Install Playwright browsers
       run: |
         python -m playwright install chromium
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pip
+          ~/.cache/ms-playwright
+        key: ${{ runner.os }}-pip-playwright-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-playwright-
 
+  unit-tests:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-xdist
+        pip install -r requirements.txt
+    
+    - name: Run unit tests
+      run: |
+        PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests/unit_test.py -v
+
+  database-tests:
+    needs: setup
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: epsinformation
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-xdist
+        pip install -r requirements.txt
+    
     - name: Load database schema
       run: |
         mysql -h127.0.0.1 -uroot -proot epsinformation < bdd/bdd.sql
+    
+    - name: Run database-related tests
+      run: |
+        PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests/performance_test.py -v
+
+  e2e-tests:
+    needs: [setup, database-tests]
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: epsinformation
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
         
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-xdist playwright
+        pip install -r requirements.txt
+    
+    - name: Install Playwright browsers
+      run: |
+        python -m playwright install chromium
+    
+    - name: Load database schema
+      run: |
+        mysql -h127.0.0.1 -uroot -proot epsinformation < bdd/bdd.sql
+    
     - name: Prepare test users in database
       run: |
         mysql -h127.0.0.1 -uroot -proot epsinformation << EOF
@@ -54,18 +142,6 @@ jobs:
         INSERT INTO type (intitule) VALUES ('Actualité'), ('Évènement'), ('Annonce'), ('Sondage');
         EOF
     
-    - name: Run unit tests
-      run: |
-        PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests/unit_test.py -v
-        
-    - name: Run performance tests
-      run: |
-        PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/performance_test.py -v
-        
-    # - name: Run integration tests
-    #   run: |
-    #     PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/integration_test.py -v
-    
     - name: Start Flask server for E2E tests
       run: |
         # Initialiser une configuration minimale requise pour l'application
@@ -75,28 +151,51 @@ jobs:
         # Exporter la variable PYTHONPATH correctement
         export PYTHONPATH=$PYTHONPATH:$(pwd)
         
-        # Démarrer le serveur Flask en mode debug avec les logs visibles pour déboguer
+        # Démarrer le serveur Flask en mode debug et attendre qu'il soit prêt
         nohup python -m flask --app app run --host=0.0.0.0 --debug > flask.log 2>&1 &
         
         # Attendre que le serveur démarre
         echo "Waiting for Flask server to start..."
-        sleep 20
+        sleep 15
         
         # Afficher les logs du serveur pour déboguer
         cat flask.log
         
-        # Vérifier que le serveur est bien démarré
-        curl -v http://localhost:5000/login || echo "Server might not be responding correctly"
-        
-    - name: Skip end-to-end tests temporarily
+        # Vérifier que le serveur est bien démarré et échouer si ce n'est pas le cas
+        if ! curl -s http://localhost:5000/ > /dev/null; then
+          echo "Flask server failed to start properly"
+          exit 1
+        else
+          echo "Flask server started successfully"
+        fi
+    
+    # Pour l'instant, on passe toujours cette étape même si les tests E2E échouent
+    # pour éviter de bloquer le pipeline entier
+    - name: Run end-to-end tests
       run: |
-        echo "End-to-end tests temporairement ignorés pour ne pas bloquer le pipeline"
-        # PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/end_to_end_test.py -v || true
+        PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/end_to_end_test.py -v || echo "E2E tests failed but continuing pipeline"
+
+  coverage:
+    needs: [unit-tests, database-tests]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
         
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov
+        pip install -r requirements.txt
+    
     - name: Generate test coverage report
       run: |
         PYTHONPATH=$PYTHONPATH:$(pwd) pytest --cov=. --cov-report=xml
-        
+    
     - name: Upload coverage report
       uses: codecov/codecov-action@v3
       with:
