@@ -144,7 +144,12 @@ jobs:
             echo "Waiting for server... ($i)"
             sleep 1
           done
-          curl -s http://localhost:5000 > /dev/null || (echo "Server did not start" && exit 1)
+          if ! curl -s http://localhost:5000 > /dev/null; then
+            echo "Server did not start"
+            echo '==== Flask server log (if any) ===='
+            cat nohup.out || echo 'No nohup.out log found.'
+            exit 1
+          fi
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
         with:
@@ -155,7 +160,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: zap
+          name: zap-scan
           path: |
             report_html.html
             report_json.json
