@@ -45,10 +45,9 @@ jobs:
           pip install pytest
       - name: Run integration tests
         run: pytest tests/integration_test.py
-
   e2e-tests-playwright:
     runs-on: ubuntu-latest
-    needs: unit-tests-junit-api
+    needs: integration-tests
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -90,10 +89,9 @@ jobs:
         run: |
           echo '==== Flask server log (if any) ===='
           cat nohup.out || echo 'No nohup.out log found.'
-
   performance-tests-jmeter:
     runs-on: ubuntu-latest
-    needs: unit-tests-junit-api
+    needs: e2e-tests-playwright
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -114,10 +112,9 @@ jobs:
         with:
           name: jmeter-results
           path: tests/get_posts_test_results.jtl
-
   owasp-zap-security-scan:
     runs-on: ubuntu-latest
-    needs: unit-tests-junit-api
+    needs: e2e-tests-playwright
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
