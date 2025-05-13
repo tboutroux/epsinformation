@@ -110,7 +110,7 @@ jobs:
         run: |
           jmeter -n -t tests/get_posts_test.jmx -l tests/get_posts_test_results.jtl
       - name: Archive JMeter results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jmeter-results
           path: tests/get_posts_test_results.jtl
