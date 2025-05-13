@@ -125,6 +125,18 @@ jobs:
       run: |
         python -m playwright install chromium
     
+    - name: Debug - Show locale and env
+      run: |
+        echo "==== Locale ===="
+        locale || echo "locale not found"
+        echo "==== Env ===="
+        env
+        echo "==== curl version ===="
+        curl --version
+        echo "==== Flask & Werkzeug version ===="
+        pip freeze | grep Flask || true
+        pip freeze | grep Werkzeug || true
+
     - name: Debug - Show open ports before Flask
       run: |
         echo "==== Ports ouverts avant Flask ===="
@@ -152,6 +164,8 @@ jobs:
         EOF
     - name: Start Flask server for E2E tests
       run: |
+        export LC_ALL=C.UTF-8
+        export LANG=C.UTF-8
         # Initialiser une configuration minimale requise pour l'application
         mkdir -p conf
         echo '{"secret_key": "test-secret-key", "weather_api": {"base_url": "http://test", "api_key": "test", "insee": "test"}}' > conf/config.json
@@ -208,6 +222,8 @@ jobs:
 
     - name: Run end-to-end tests
       run: |
+        export LC_ALL=C.UTF-8
+        export LANG=C.UTF-8
         # Double-check server availability before running tests
         if ! curl -s http://localhost:5000/ > /dev/null; then
           echo "WARNING: Flask server not responding before tests - check server status"
@@ -217,7 +233,7 @@ jobs:
         
         # Run the tests with a small delay to ensure server is fully ready
         sleep 2
-        PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/end_to_end_test.py -v || echo "E2E tests failed but continuing pipeline"
+        DEBUG=pw:api PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/end_to_end_test.py -v || echo "E2E tests failed but continuing pipeline"
         
     - name: Debug - Playwright version
       run: |
