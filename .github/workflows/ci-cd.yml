@@ -41,7 +41,8 @@ jobs:
     - name: Load database schema
       run: |
         mysql -h127.0.0.1 -uroot -proot epsinformation < bdd/bdd.sql
-          - name: Run unit tests
+    
+    - name: Run unit tests
       run: |
         PYTHONPATH=$PYTHONPATH:$(pwd) pytest tests/unit_test.py -v
         
@@ -53,7 +54,8 @@ jobs:
       run: |
         nohup PYTHONPATH=$PYTHONPATH:$(pwd) python app.py &
         sleep 5
-          - name: Run end-to-end tests
+        
+    - name: Run end-to-end tests
       run: |
         PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/end_to_end_test.py -v
         
