@@ -80,5 +80,9 @@ jobs:
           curl -s http://localhost:5000 > /dev/null || (echo "Server did not start" && exit 1)
       - name: Run end-to-end tests
         run: pytest tests/end_to_end_test.py
+      - name: Show Flask server logs
+        run: |
+          echo '==== Flask server log (if any) ===='
+          cat nohup.out || echo 'No nohup.out log found.'
 
 
