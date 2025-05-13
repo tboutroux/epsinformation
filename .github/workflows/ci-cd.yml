@@ -48,7 +48,8 @@ jobs:
     - name: Run integration tests
       run: |
         PYTHONPATH=$PYTHONPATH:$(pwd) python -m pytest tests/integration_test.py -v
-          - name: Start Flask server for E2E tests
+    
+    - name: Start Flask server for E2E tests
       run: |
         nohup PYTHONPATH=$PYTHONPATH:$(pwd) python app.py &
         sleep 5
