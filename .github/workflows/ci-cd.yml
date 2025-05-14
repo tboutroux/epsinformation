@@ -202,6 +202,11 @@ jobs:
         run: |
           echo "Running ZAP scan directly with Docker"
           docker pull ghcr.io/zaproxy/zaproxy:stable
-          docker run --rm --network=host ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:5000 -I
-        continue-on-error: true
+          mkdir -p zap-output
+          docker run --rm --network=host -v $(pwd)/zap-output:/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:5000 -I -f openapi -r zap-report.html || true
+      - name: Archive ZAP Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-scan-results
+          path: zap-output
 
