@@ -153,10 +153,10 @@ jobs:
       - name: Install JMeter
         run: |
           sudo apt-get update
-          sudo apt-get install -y jmeter
+          sudo apt-get install -y jmeter      
       - name: Run JMeter performance tests
         run: |
-          jmeter -n -t tests/get_posts_test.jmx -l tests/get_posts_test_results.jtl
+          jmeter -n -t tests/get_posts_test.jmx -l tests/get_posts_test_results.jtl -JxstreamSecurity=true -Jjmeter.save.saveservice.assertion_results=all -Jjmeter.save.saveservice.output_format=xml
       - name: Archive JMeter results
         uses: actions/upload-artifact@v4
         with:
