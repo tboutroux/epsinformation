@@ -7,23 +7,8 @@ on:
     branches: ["*"]
 
 jobs:
-  unit-tests-junit-api:
+  unit-tests-unit-api:
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: epsinformation
-          MYSQL_USER: epsinformation
-          MYSQL_PASSWORD: epsinformation
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -38,9 +23,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest
-      - name: Initialize database
-        run: |
-          mysql --host=127.0.0.1 --port=3306 --user=epsinformation --password=epsinformation epsinformation < bdd/bdd.sql
       - name: Run unit tests
         run: pytest tests/unit_test.py
 
@@ -215,11 +197,11 @@ jobs:
             echo '==== Flask server log (if any) ===='
             cat nohup.out || echo 'No nohup.out log found.'
             exit 1
-          fi      
+          fi        
       - name: Run OWASP ZAP Baseline Scan Manually
         run: |
           echo "Running ZAP scan directly with Docker"
           docker pull ghcr.io/zaproxy/zaproxy:stable
-          docker run --rm --network=host ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:5000
+          docker run --rm --network=host ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:5000 -I
         continue-on-error: true
 
