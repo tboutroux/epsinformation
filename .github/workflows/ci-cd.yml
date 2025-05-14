@@ -154,10 +154,17 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jmeter      
-      
       - name: Run JMeter performance tests
         run: |
-          jmeter -n -t tests/get_posts_test.jmx -l tests/get_posts_test_results.jtl -JxstreamSecurity=true -Jjmeter.saveservice.output_format=xml -Jjmeter.save.saveservice.assertion_results=all -Djava.security.egd=file:/dev/./urandom -Jjmeter.save.saveservice.timestamp_format="yyyy/MM/dd HH:mm:ss" -Jjava.awt.headless=true -Jjmeter.xstream.allowedTypes="org.apache.jmeter.save.ScriptWrapper,org.apache.jmeter.samplers,java.lang.String,org.apache.jmeter.assertions,org.apache.jmeter.testelement.*" -Jjmeter.saveservice.autoflush=true
+          echo "jmeter.save.saveservice.output_format=xml" > user.properties
+          echo "jmeter.save.saveservice.assertion_results=all" >> user.properties
+          echo "java.security.egd=file:/dev/./urandom" >> user.properties
+          echo "jmeter.save.saveservice.timestamp_format=yyyy/MM/dd HH:mm:ss" >> user.properties
+          echo "java.awt.headless=true" >> user.properties
+          echo "jmeter.saveservice.autoflush=true" >> user.properties
+          echo "xstream.allowTypesByWildcard=org.apache.jmeter.**" >> user.properties
+          
+          jmeter -n -t tests/get_posts_test.jmx -l tests/get_posts_test_results.jtl -p user.properties
       - name: Archive JMeter results
         uses: actions/upload-artifact@v4
         with:
