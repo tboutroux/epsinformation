@@ -152,8 +152,9 @@ jobs:
           java-version: '17'
       - name: Install JMeter
         run: |
-          sudo apt-get update
-          sudo apt-get install -y jmeter      
+          wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.2.tgz
+          tar -xzf apache-jmeter-5.6.2.tgz
+          echo "$PWD/apache-jmeter-5.6.2/bin" >> $GITHUB_PATH
       - name: Run JMeter performance tests
         run: |
           echo "jmeter.save.saveservice.output_format=xml" > user.properties
@@ -164,7 +165,7 @@ jobs:
           echo "jmeter.saveservice.autoflush=true" >> user.properties
           echo "xstream.allowTypesByWildcard=org.apache.jmeter.**" >> user.properties
           
-          jmeter -n -t tests/get_posts_test.jmx -l tests/get_posts_test_results.jtl -p user.properties
+          apache-jmeter-5.6.2/bin/jmeter -n -t tests/get_posts_test.jmx -l tests/get_posts_test_results.jtl -p user.properties
       - name: Archive JMeter results
         uses: actions/upload-artifact@v4
         with:
